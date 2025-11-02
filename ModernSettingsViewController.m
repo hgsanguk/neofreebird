@@ -549,7 +549,7 @@ static UIFont *TwitterChirpFont(TwitterFontStyle style) {
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (section == 0 || section == 1 || section == 2 || section == 3) {
+    if (section == 0 || section == 1 || section == 2 || section == 3 || section == 4) {
         return UITableViewAutomaticDimension;
     }
     return 0;
