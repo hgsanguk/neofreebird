@@ -255,19 +255,41 @@ BH_METRIC(displayType,                (NSUInteger)0)
 
 - (void)downloadDidFinish:(NSURL *)tmpURL Filename:(NSString *)name {
     NSString *doc = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-    NSURL *dst = [[NSURL fileURLWithPath:doc] URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4", NSUUID.UUID.UUIDString]];
+    NSURL *dst = [[NSURL fileURLWithPath:doc]
+                  URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4", NSUUID.UUID.UUIDString]];
+
     [[NSFileManager defaultManager] moveItemAtURL:tmpURL toURL:dst error:nil];
-    if (![BHTManager DirectSave]) { [self.hud dismiss]; [BHTManager showSaveVC:dst]; }
-    else                          { [BHTManager save:dst]; }
+
+    if (![BHTManager DirectSave]) {
+        [self.hud dismiss];
+        [BHTManager showSaveVC:dst];
+    } else {
+        if (@available(iOS 10.0, *)) {
+            UINotificationFeedbackGenerator *g = [UINotificationFeedbackGenerator new];
+            [g prepare];
+            [g notificationOccurred:UINotificationFeedbackTypeSuccess];
+        }
+        [BHTManager save:dst];
+    }
 }
 
 - (void)downloadDidFailureWithError:(NSError *)error {
-    [self.hud dismiss]; if (!error) return;
+    [self.hud dismiss];
+    if (!error) return;
+
     UIAlertController *a = [UIAlertController alertControllerWithTitle:[[BHTBundle sharedBundle] localizedStringForKey:@"ERROR_TITLE"]
                                                                message:error.localizedDescription
                                                         preferredStyle:UIAlertControllerStyleAlert];
-    [a addAction:[UIAlertAction actionWithTitle:[[BHTBundle sharedBundle] localizedStringForKey:@"OK_BUTTON"] style:UIAlertActionStyleDefault handler:nil]];
+    [a addAction:[UIAlertAction actionWithTitle:[[BHTBundle sharedBundle] localizedStringForKey:@"OK_BUTTON"]
+                                          style:UIAlertActionStyleDefault
+                                        handler:nil]];
     [BHTopMostController() presentViewController:a animated:YES completion:nil];
+
+    if (@available(iOS 10.0, *)) {
+        UINotificationFeedbackGenerator *g = [UINotificationFeedbackGenerator new];
+        [g prepare];
+        [g notificationOccurred:UINotificationFeedbackTypeError];
+    }
 }
 
 #pragma mark ••• Required by Twitter runtime
